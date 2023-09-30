@@ -1,5 +1,5 @@
-require('dotenv').config();
 const express = require('express');
+require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
@@ -9,38 +9,43 @@ const cors = require('cors');
 app.use(cors());
 app.use(express.json());
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.euxm4cs.mongodb.net/?retryWrites=true&w=majority`;
+
+
+const uri = process.env.DB_URI;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
 
+
+// name= abhamid3311
+// pass= GNIceevnmjl5f43s
+
 const run = async () => {
   try {
-    const db = client.db('tech-net');
-    const productCollection = db.collection('product');
+    const productCollection = client.db('tech_net').collection('products');
+    const userCollection = client.db('tech_net').collection('users');
 
-    app.get('/products', async (req, res) => {
-      const cursor = productCollection.find({});
-      const product = await cursor.toArray();
+    console.log("DB Connected")
 
-      res.send({ status: true, data: product });
+
+
+    //Products
+    app.get("/products", async (req, res) => {
+      const data = await productCollection.find({}).toArray();
+      res.send({ status: true, data: data });
     });
 
     app.post('/product', async (req, res) => {
       const product = req.body;
-
       const result = await productCollection.insertOne(product);
-
       res.send(result);
     });
 
     app.get('/product/:id', async (req, res) => {
       const id = req.params.id;
-
       const result = await productCollection.findOne({ _id: ObjectId(id) });
-      console.log(result);
       res.send(result);
     });
 
@@ -52,6 +57,9 @@ const run = async () => {
       res.send(result);
     });
 
+
+
+    //Comments
     app.post('/comment/:id', async (req, res) => {
       const productId = req.params.id;
       const comment = req.body.comment;
@@ -91,6 +99,8 @@ const run = async () => {
       }
     });
 
+    //Users
+
     app.post('/user', async (req, res) => {
       const user = req.body;
 
@@ -114,7 +124,7 @@ const run = async () => {
   }
 };
 
-run().catch((err) => console.log(err));
+run().catch(console.dir);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
